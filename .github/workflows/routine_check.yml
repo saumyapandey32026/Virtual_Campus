@@ -1,35 +1,38 @@
 name: Nightly Study WhatsApp Check
 
 on:
-  schedule:
-    # Runs every day at 22:00 IST (16:30 UTC)
-    - cron: '30 16 * * *'
   workflow_dispatch:
+    inputs:
+      test_hours:
+        description: 'Testing Hours (e.g., 6+, 4-6, 2-4, <2)'
+        required: false
+        default: '6+'
+  schedule:
+    - cron: '30 16 * * *' # Har raat 10:00 PM IST (16:30 UTC) par chalega
 
 jobs:
   send-report:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout repository
+      - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Set up Python
+      - name: Setup Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
+          python-version: '3.10'
 
-      - name: Install dependencies
+      - name: Install Dependencies
         run: |
-          python -m pip install --upgrade pip
-          pip install twilio
+          pip install twilio requests
 
-      - name: Send WhatsApp update
+      - name: Run WhatsApp Script
         env:
           TWILIO_ACCOUNT_SID: ${{ secrets.TWILIO_ACCOUNT_SID }}
           TWILIO_AUTH_TOKEN: ${{ secrets.TWILIO_AUTH_TOKEN }}
-          TWILIO_WHATSAPP_FROM: ${{ secrets.TWILIO_WHATSAPP_FROM }}
-          TWILIO_WHATSAPP_TO: ${{ secrets.TWILIO_WHATSAPP_TO }}
           CLOUD_ENDPOINT: ${{ secrets.CLOUD_ENDPOINT }}
+          MY_WHATSAPP_NUMBER: ${{ secrets.MY_WHATSAPP_NUMBER }}
         run: |
-          python send_whatsapp.py
+          # Agar cloud par data khali mile, toh yeh testing hours use karega
+          python send_whatsapp.py "${{ github.event.inputs.test_hours }}"
+

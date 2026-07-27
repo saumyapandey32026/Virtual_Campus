@@ -10,23 +10,22 @@ def main():
     to_whatsapp = os.environ.get('MY_WHATSAPP_NUMBER')
     from_whatsapp = 'whatsapp:+14155238886'
 
-    # Sys args reading fallback filter logic
-    input_argument = ""
-    if len(sys.argv) > 1 and sys.argv[1]:
-        input_argument = str(sys.argv[1]).strip()
+    # Pure argument list ko single dynamic string mein convert karna
+    # Is se arguments ke brackets aur commas ka issue hamesha ke liye khatam ho jayega
+    full_args_string = " ".join(sys.argv[1:]) if len(sys.argv) > 1 else ""
     
-    print(f"DEBUG PIPELINE: System received parameter raw text -> '{input_argument}'")
+    print(f"DEBUG PIPELINE: Combined raw arguments string -> '{full_args_string}'")
 
-    # Accurate baseline hours detection
-    logged_hours = "6+ Hours" # Default fallback string
-    if "4-6" in input_argument:
+    # Accurate baseline hours detection based on string matching
+    logged_hours = "6+ Hours" # Default fallback
+    if "4-6" in full_args_string:
         logged_hours = "4-6 Hours"
-    elif "2-4" in input_argument:
+    elif "2-4" in full_args_string:
         logged_hours = "2-4 Hours"
-    elif "<2" in input_argument:
+    elif "<2" in full_args_string:
         logged_hours = "<2 Hours"
 
-    print(f"DEBUG PIPELINE: Mapped execution route set to -> '{logged_hours}'")
+    print(f"DEBUG PIPELINE: Final evaluation path locked -> '{logged_hours}'")
 
     # Core Custom Structural Phrases
     quote = ""

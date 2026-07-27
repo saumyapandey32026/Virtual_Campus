@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+  <title>IITM BS Data Science - Elite Focus Tracker</title>
+  <style>
+    :root {
+      --bg: #04070f;
+      --panel: rgba(10, 16, 30, 0.96);
+      --panel-2: rgba(16, 26, 46, 0.94);
+      --text: #f3f7ff;
+      --muted: #8fa3c4;
+      --accent: #19f2b1;
+      --accent-blue: #2d7dff;
+      --warning: #ff4d6d;
+      --warning-soft: #ff8a8a;
+      --border: rgba(255,255,255,0.08);
+      --shadow: 0 24px 60px rgba(0, 0, 0, 0.45);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      background:
+        radial-gradient(circle at top left, rgba(25, 242, 177, 0.15), transparent 24%),
+        radial-gradient(circle at bottom right, rgba(45, 125, 255, 0.16), transparent 30%),
+        var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 24px;
+    }
+
+    .shell {
+      max-width: 1120px;
+      margin: 0 auto;
+      display: grid;
+      gap: 20px;
+    }
+
+    .hero, .card {
+      background: linear-gradient(135deg, var(--panel), var(--panel-2));
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(16px);
+    }
+
+    .hero {
+      padding: 30px 32px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero::after {
+      content: "";
+      position: absolute;
+      right: -30px;
+      bottom: -40px;
+      width: 260px;
+      height: 260px;
+      background: radial-gradient(circle, rgba(25, 242, 177, 0.18), transparent 70%);
+      pointer-events: none;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 7px 12px;
+      border: 1px solid rgba(25, 242, 177, 0.25);
+      color: var(--accent);
+      border-radius: 999px;
+      text-transform: uppercase;
+      letter-spacing: 0.2em;
+      font-size: 0.76rem;
+      font-weight: 700;
+      margin-bottom: 12px;
+    }
+
+    h1 {
+      margin: 0 0 8px;
+      font-size: clamp(1.7rem, 3vw, 2.4rem);
+      font-weight: 800;
+    }
+
+    .hero p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 1rem;
+    }
+
+    .card {
+      padding: 24px 26px;
+    }
+
+    .card h2 {
+      margin: 0 0 14px;
+      font-size: 1.05rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #e7efff;
+    }
+
+    .logger-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: center;
+      margin-bottom: 14px;
+    }
+
+    .logger-select {
+      flex: 1 1 220px;
+      padding: 12px 14px;
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.05);
+      color: var(--text);
+      font-size: 0.98rem;
+      outline: none;
+    }
+
+    .log-btn {
+      padding: 12px 16px;
+      border: none;
+      border-radius: 14px;
+      background: linear-gradient(135deg, var(--accent), var(--accent-blue));
+      color: #02110c;
+      font-weight: 800;
+      cursor: pointer;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      box-shadow: 0 8px 24px rgba(45, 125, 255, 0.2);
+    }
+
+    .log-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 30px rgba(45, 125, 255, 0.3);
+    }
+
+    .status-text {
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+
+    .coach-box {
+      border-radius: 20px;
+      padding: 20px;
+      min-height: 140px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 8px;
+      border: 1px solid rgba(255,255,255,0.08);
+      background: linear-gradient(135deg, rgba(25, 242, 177, 0.08), rgba(45, 125, 255, 0.08));
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.04);
+    }
+
+    .coach-title {
+      font-size: 0.8rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      font-weight: 700;
+      color: var(--accent);
+    }
+
+    .coach-box.warning {
+      border-color: rgba(255, 77, 109, 0.22);
+      background: linear-gradient(135deg, rgba(255, 77, 109, 0.1), rgba(255, 138, 138, 0.08));
+    }
+
+    .coach-box.warning .coach-title {
+      color: var(--warning);
+    }
+
+    .coach-box p {
+      margin: 0;
+      line-height: 1.7;
+      color: #f5f9ff;
+    }
+
+    .archive-list {
+      display: grid;
+      gap: 10px;
+    }
+
+    .archive-item {
+      display: grid;
+      grid-template-columns: 150px 1fr 1.6fr;
+      gap: 12px;
+      align-items: start;
+      padding: 12px 14px;
+      border-radius: 14px;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.06);
+    }
+
+    .archive-item strong {
+      color: #f5f9ff;
+    }
+
+    .archive-meta {
+      color: var(--muted);
+      font-size: 0.93rem;
+    }
+
+    .archive-quote {
+      color: #dfeaff;
+      font-size: 0.95rem;
+      line-height: 1.6;
+    }
+
+    .weekly-card {
+      border-radius: 20px;
+      padding: 18px;
+      border: 1px solid rgba(255,255,255,0.08);
+      background: rgba(255,255,255,0.03);
+      min-height: 140px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      color: var(--muted);
+      line-height: 1.7;
+    }
+
+    .weekly-card.unlocked {
+      border-color: rgba(25, 242, 177, 0.2);
+      background: linear-gradient(135deg, rgba(25, 242, 177, 0.08), rgba(45, 125, 255, 0.08));
+      color: #f5f9ff;
+    }
+
+    .weekly-card strong {
+      color: var(--accent);
+    }
+
+    .weekly-grade {
+      margin-top: 12px;
+      font-weight: 700;
+      color: var(--accent);
+    }
+
+    @media (max-width: 760px) {
+      .archive-item {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 640px) {
+      body { padding: 14px; }
+      .card, .hero { padding: 18px; }
+      .logger-row { flex-direction: column; align-items: stretch; }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <header class="hero">
+      <div class="badge">IITM BS • Data Science</div>
+      <h1>IITM BS Data Science - Elite Focus Tracker</h1>
+      <p>Train like a researcher, execute like a founder, and protect your consistency.</p>
+    </header>
+
+    <section class="card">
+      <h2>Daily Logger Input</h2>
+      <div class="logger-row">
+        <select id="hoursSelect" class="logger-select">
+          <option value="6+ Hours">6+ Hours</option>
+          <option value="4-6 Hours">4-6 Hours</option>
+          <option value="2-4 Hours">2-4 Hours</option>
+          <option value="&lt;2 Hours">&lt;2 Hours</option>
+        </select>
+        <button id="logBtn" class="log-btn">Log Today</button>
+      </div>
+      <div class="logger-row">
+        <input id="kvKey" class="logger-select" placeholder="kvdb.io key (example: mytracker)" />
+        <button id="syncBtn" class="log-btn">Sync Profile</button>
+      </div>
+      <div id="statusText" class="status-text">Your decision is now being stored in the vault.</div>
+    </section>
+
+    <section class="card">
+      <h2>Live Coach Display</h2>
+      <div id="coachBox" class="coach-box">
+        <div class="coach-title">Coach Signal</div>
+        <p id="coachMessage">Loading your discipline signal...</p>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Daily Log Vault</h2>
+      <div id="archiveList" class="archive-list"></div>
+    </section>
+
+    <section class="card">
+      <h2>Weekly Report Card</h2>
+      <div id="weeklyCard" class="weekly-card">
+        <div id="weeklyCardText">Locked until Sunday at 10:00 PM. The weekly verdict is still in the lab.</div>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    const select = document.getElementById('hoursSelect');
+    const logBtn = document.getElementById('logBtn');
+    const syncBtn = document.getElementById('syncBtn');
+    const kvKey = document.getElementById('kvKey');
+    const statusText = document.getElementById('statusText');
+    const coachBox = document.getElementById('coachBox');
+    const coachMessage = document.getElementById('coachMessage');
+    const archiveList = document.getElementById('archiveList');
+    const weeklyCard = document.getElementById('weeklyCard');
+    const weeklyCardText = document.getElementById('weeklyCardText');
+
+    const storageKey = 'iitmEliteFocusVault';
+    const defaultKvKey = 'iitm-focus-tracker';
+
+    function getEntries() {
+      try {
+        return JSON.parse(localStorage.getItem(storageKey)) || [];
+      } catch (err) {
+        return [];
+      }
+    }
+
+    function saveEntries(entries) {
+      localStorage.setItem(storageKey, JSON.stringify(entries));
+    }
+
+    function getRating(hours) {
+      if (hours === '6+ Hours') return 'Very Good';
+      if (hours === '4-6 Hours') return 'Good';
+      if (hours === '2-4 Hours') return 'Poor';
+      return 'Very Poor';
+    }
+
+    function getFeedback(hours) {
+      if (hours === '6+ Hours') {
+        return {
+          title: 'Elite Signal',
+          quote: 'EXCELLENT EXECUTION. That is elite-level discipline. Your mind is acting like a high-performance data-science pipeline: clean, consistent, and relentlessly improving.',
+          warning: false
+        };
+      }
+      if (hours === '4-6 Hours') {
+        return {
+          title: 'Steady Signal',
+          quote: 'STABLE TRAINING. Good baseline performance today. You kept the model steady, but to beat the competition, you need to push for hyperparameter tuning tomorrow!',
+          warning: false
+        };
+      }
+      if (hours === '2-4 Hours') {
+        return {
+          title: 'Warning Signal',
+          quote: 'STRICT WARNING! Only 2-4 hours today? Ismita, Jayant, and Himanshu are working hard and leaving you behind. Wake up!',
+          warning: true
+        };
+      }
+      return {
+        title: 'Critical Signal',
+        quote: 'CRITICAL FAILURE! Less than 2 hours? You are experiencing massive data drift. Ismita, Jayant, and Himanshu are accelerating while you are stalling. Fix this pipeline immediately!',
+        warning: true
+      };
+    }
+
+    function getLocalDateKey() {
+      const now = new Date();
+      const year = now.getFullYear();
+      const month = String(now.getMonth() + 1).padStart(2, '0');
+      const day = String(now.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    }
+
+    function formatDate(dateValue) {
+      const [year, month, day] = dateValue.split('-').map(Number);
+      return new Date(year, month - 1, day).toLocaleDateString('en-IN', {
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric'
+      });
+    }
+
+    function renderArchive() {
+      const entries = getEntries().slice().reverse();
+      if (!entries.length) {
+        archiveList.innerHTML = '<div class="archive-meta">No logs yet. Start building your discipline vault.</div>';
+        return;
+      }
+
+      archiveList.innerHTML = entries.map(entry => `
+        <div class="archive-item">
+          <div>
+            <strong>${formatDate(entry.date)}</strong>
+            <div class="archive-meta">${entry.hours}</div>
+          </div>
+          <div class="archive-meta">${entry.rating}</div>
+          <div class="archive-quote">“${entry.quote}”</div>
+        </div>
+      `).join('');
+    }
+
+    function renderCoach(hours) {
+      const feedback = getFeedback(hours);
+      coachBox.classList.toggle('warning', feedback.warning);
+      document.querySelector('.coach-title').textContent = feedback.title.toUpperCase();
+      coachMessage.textContent = feedback.quote;
+      statusText.textContent = `Saved for today: ${hours} (${getRating(hours)})`;
+    }
+
+    function setStatus(message) {
+      statusText.textContent = message;
+    }
+
+    function getWeeklyPayload() {
+      const entries = getEntries();
+      return {
+        syncedAt: new Date().toISOString(),
+        entries: entries.slice(-7)
+      };
+    }
+
+    function syncToCloud() {
+      const key = kvKey.value.trim() || defaultKvKey;
+      const payload = getWeeklyPayload();
+      const url = `https://kvdb.io/${encodeURIComponent(key)}?value=${encodeURIComponent(JSON.stringify(payload))}`;
+
+      fetch(url, { method: 'POST', mode: 'no-cors' })
+        .then(() => setStatus(`Profile synced to ${key}`))
+        .catch(() => setStatus('Sync failed. Check the key or network connection.'));
+    }
+
+    function triggerConfetti() {
+      confetti({
+        particleCount: 220,
+        spread: 140,
+        startVelocity: 70,
+        origin: { y: 0.6 }
+      });
+    }
+
+    function logToday(hours) {
+      const entries = getEntries();
+      const today = getLocalDateKey();
+      const feedback = getFeedback(hours);
+      const index = entries.findIndex(entry => entry.date === today);
+
+      const newEntry = {
+        date: today,
+        hours,
+        rating: getRating(hours),
+        quote: feedback.quote
+      };
+
+      if (index >= 0) {
+        entries[index] = newEntry;
+      } else {
+        entries.push(newEntry);
+      }
+
+      saveEntries(entries);
+      renderArchive();
+      renderCoach(hours);
+      updateWeeklyCard();
+
+      if (hours === '6+ Hours') {
+        triggerConfetti();
+      }
+    }
+
+    function getWeeklyStatus(entries) {
+      const recent = entries.slice(-7);
+      const eliteCount = recent.filter(entry => entry.hours === '6+ Hours').length;
+      if (eliteCount >= 4) {
+        return {
+          rating: 'OVERFITTING DISCIPLINE (Elite)',
+          quote: 'Incredible week. You are dominating the leaderboard. Ismita, Jayant, and Himanshu have nothing on you this week.'
+        };
+      }
+      return {
+        rating: 'UNDERFITTING RISK (Danger)',
+        quote: 'Disastrous weekly cycle. You are falling behind your peers. Ismita, Jayant, and Himanshu are outperforming you. Reset your algorithm next Monday.'
+      };
+    }
+
+    function updateWeeklyCard() {
+      const now = new Date();
+      const isSundayAfter10PM = now.getDay() === 0 && (now.getHours() > 22 || (now.getHours() === 22 && now.getMinutes() >= 0));
+
+      if (!isSundayAfter10PM) {
+        weeklyCard.classList.remove('unlocked');
+        weeklyCardText.innerHTML = 'Locked until Sunday at 10:00 PM. The weekly verdict is still in the lab.';
+        return;
+      }
+
+      weeklyCard.classList.add('unlocked');
+      const result = getWeeklyStatus(getEntries());
+      weeklyCardText.innerHTML = `<strong>${result.rating}</strong><br>${result.quote}`;
+    }
+
+    logBtn.addEventListener('click', () => {
+      const selectedHours = select.value;
+      logToday(selectedHours);
+    });
+    syncBtn.addEventListener('click', syncToCloud);
+
+    renderArchive();
+    const initialHours = getEntries().length ? getEntries()[getEntries().length - 1].hours : '6+ Hours';
+    renderCoach(initialHours);
+    updateWeeklyCard();
+    setInterval(updateWeeklyCard, 60000);
+  </script>
+</body>
+</html>

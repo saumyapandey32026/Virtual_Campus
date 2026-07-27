@@ -24,7 +24,7 @@ jobs:
 
       - name: Install Dependencies
         run: |
-          pip install twilio requests
+          pip install twilio
 
       - name: Run WhatsApp Script
         env:
@@ -33,6 +33,5 @@ jobs:
           CLOUD_ENDPOINT: ${{ secrets.CLOUD_ENDPOINT }}
           MY_WHATSAPP_NUMBER: ${{ secrets.MY_WHATSAPP_NUMBER }}
         run: |
-          # Agar cloud par data khali mile, toh yeh testing hours use karega
+          # Yahan exact value quote ke sath pass ho rahi hai
           python send_whatsapp.py "${{ github.event.inputs.test_hours }}"
-
